@@ -25,6 +25,7 @@ function Button({ buttonType, onClick, buttonText, disabled }) {
       disabled={disabled}
       type={buttonType}
       onClick={() => handleButtonClick(onClick)}
+      // onClick={()=>{}} ---> for testing without jest.fn()
       className={getButtonClass(disabled)}
     >
       {buttonText}
