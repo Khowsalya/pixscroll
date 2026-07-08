@@ -1,4 +1,5 @@
 module.exports = {
+  testPathIgnorePatterns: ["/node_modules/", "/__e2e__/"],
   testEnvironment: "jsdom",
   setupFilesAfterEnv: ["<rootDir>/src/setupTests.js"],
 
