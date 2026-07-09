@@ -1,4 +1,5 @@
-import { render, screen, fireEvent, expect } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
+import { expect } from "@jest/globals";
 import Button from "../Components/Button/Button.jsx";
 
 // seond test

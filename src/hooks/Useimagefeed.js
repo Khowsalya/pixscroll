@@ -28,8 +28,6 @@ export function useImageFeed(searchQuery, debouncedFilters) {
       getNextPageParam: (lastPage, allPages) =>
         lastPage.length === 0 ? undefined : allPages.length + 1,
 
-      retry: 2,
-      retryDelay: 1000,
       staleTime: 1000 * 60 * 5,
       gcTime: 1000 * 60 * 10,
     });

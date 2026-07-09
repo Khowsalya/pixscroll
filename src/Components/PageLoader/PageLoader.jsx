@@ -25,7 +25,8 @@ import { pageLoaderStyles, LOADER_RECTS } from "./style";
 
 function PageLoader(props) {
   return (
-    <div className={pageLoaderStyles.wrapper}>
+    <div className={pageLoaderStyles.wrapper}
+    data-testid="page-loader">
       <ContentLoader viewBox="0 0 820 450" height={450} width={820} {...props}>
         {LOADER_RECTS.map((rect, i) => (
           <rect key={i} {...rect} />
