@@ -2,7 +2,12 @@ import { devices, defineConfig } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./__e2e__",
-  webserver: {
+
+  use: {
+    baseURL: "http://localhost:5173",
+  },
+
+  webServer: {
     command: "npm run dev",
     port: 5173,
     reuseExistingServer: !process.env.CI,
@@ -19,7 +24,6 @@ export default defineConfig({
       name: "Mobile",
       use: {
         ...devices["iPhone 12"],
-        channel: "chrome",
       },
     },
   ],
