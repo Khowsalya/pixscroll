@@ -16,6 +16,8 @@ export const FeedStyles = {
   cardOuter: "flex justify-center py-3",
   card: "w-[300px] rounded-[25px] overflow-hidden shadow-md bg-white cursor-pointer hover:shadow-xl transition-shadow",
   cardImage: "w-full h-[150px] object-cover",
+  cardactionBar:
+    "flex items-center justify-evenly pt-2 border-t border-gray-100 mt-2 w-full",
   cardBody: "p-3 flex flex-col gap-1 text-left",
   cardTitle: "text-sm font-semibold line-clamp-2",
   cardUsername: "text-xs text-gray-600",
