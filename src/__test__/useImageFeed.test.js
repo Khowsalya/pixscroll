@@ -1,5 +1,5 @@
-import { expect, test, beforeEach, describe } from "@jest/globals";
-import { renderHook, waitFor } from "@testing-library/react";
+import { expect, test, beforeEach, afterEach, describe } from "@jest/globals";
+import { renderHook, waitFor, cleanup } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useImageFeed } from "../hooks/useImageFeed";
 import { axiosInstance } from "../helpers/axiosInstance";
@@ -33,6 +33,11 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
+afterEach(() => {
+  cleanup();
+  jest.clearAllMocks();
+});
+
 // ─── Fake data matching your Unsplash shape ───────────────────
 const fakePhoto = {
   id: "1",
@@ -61,34 +66,59 @@ test("returns images in browse mode", async () => {
 });
 
 // ─── Test 2: Loading state ─────────────────────────────────────
-test("isLoading is true while fetching", () => {
-  // ARRANGE — never resolves = stuck in loading forever
-  axiosInstance.get.mockReturnValue(new Promise(() => {}));
+// test("isLoading is true while fetching", () => {
+//   // ARRANGE — never resolves = stuck in loading forever
+//   axiosInstance.get.mockReturnValue(new Promise(() => {}));
+//
+//   // ACT
+//   const { result } = renderHook(() => useImageFeed("", {}), {
+//     wrapper: createWrapper(),
+//   });
+//
+//   // ASSERT — check immediately, no await needed
+//   expect(result.current.isLoading).toBe(true);
+//   expect(result.current.images).toHaveLength(0);
+// });
 
-  // ACT
+// ✅ Fixed version: use a controllable Promise so it resolves cleanly and does not leave a hanging async task
+// This prevents the Jest warning about open handles / forced worker exit.
+test("isLoading is true while fetching", async () => {
+  let resolveRequest;
+
+  axiosInstance.get.mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        resolveRequest = resolve;
+      }),
+  );
+
   const { result } = renderHook(() => useImageFeed("", {}), {
     wrapper: createWrapper(),
   });
 
-  // ASSERT — check immediately, no await needed
   expect(result.current.isLoading).toBe(true);
   expect(result.current.images).toHaveLength(0);
+
+  resolveRequest({ data: [fakePhoto] });
+
+  await waitFor(() => {
+    expect(result.current.images).toHaveLength(1);
+  });
 });
 
 // ─── Test 3: Search mode ───────────────────────────────────────
 test("switches to search mode when query is provided", async () => {
   // ARRANGE
-  //   axiosInstance.get.mockResolvedValue({ data: [fakePhoto] });
   fetchSearchImages.mockResolvedValue([fakePhoto]);
+
   // ACT
   const { result } = renderHook(() => useImageFeed("mountains", {}), {
     wrapper: createWrapper(),
   });
 
-  // ASSERT — isSearchMode flips instantly (sync)
+  // ASSERT
   expect(result.current.isSearchMode).toBe(true);
 
-  // then wait for async data
   await waitFor(() => {
     expect(result.current.images).toHaveLength(1);
   });

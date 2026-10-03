@@ -205,14 +205,19 @@ import { useNavigate }                            from "react-router-dom";
 import { Virtuoso }                               from "react-virtuoso";
 import { useSearch }                              from "../../context/SearchContext";
 import { useImageFeed }                           from "../../hooks/useImageFeed";
-// import { flattenPages }                           from "./Feedfunction";
+import { createPhotoCardHandlers }                from "./Feedfunction";
 import { FeedStyles }                             from "./Feedstyles";
 import { EmptySearchState, SearchBanner, PhotoCard } from "./Feedui";
 import PageLoader                                 from "../PageLoader/PageLoader";
+import {useDispatch, useSelector } from 'react-redux';
+import {likePost, savePost, addComments} from '../../redux/postslice';
 
 function Feed() {
   const navigate = useNavigate();
   const { searchQuery, debouncedFilters } = useSearch();
+  const dispatch = useDispatch();
+  const posts = useSelector((state) => state.posts);
+  console.log("Redux posts:", posts);
 
   // 1. Data
   const { images, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, isSearchMode } =
@@ -227,9 +232,22 @@ function Feed() {
   }
 
   // 3. Handler
-  function handleCardClick(id) {
-    navigate("/photos", { state: { id } });
+  function handleAction({ id, action }) {
+    // console.log(`Photo ${id} ${action}`);
+    //  console.log("ID:", id);
+    // console.log("ACTION:", action);
+    if(action === "like"){
+      dispatch(likePost(id));
+    }
+    if(action === "save"){
+      dispatch(savePost(id));
+    }
   }
+
+  function handleComment({ id, comment }) {
+    console.log(`Photo ${id} comment: ${comment}`);
+    dispatch(addComments({ id, comment }));
+  } 
 
   // 4. Render
   return (
@@ -242,9 +260,31 @@ function Feed() {
         endReached={() => {
           if (hasNextPage && !isFetchingNextPage) fetchNextPage();
         }}
-        itemContent={(_index, img) => (
-          <PhotoCard img={img} onClick={() => handleCardClick(img.id)} />
-        )}
+        itemContent={(_index, img) => {
+
+          const postLikes = posts[img.id]?.likes ?? 0; // Get likes from Redux state, default to 0 if not found
+          const postSaved = posts[img.id]?.saved ?? false; 
+          const postComments = posts[img.id]?.comments ?? []; 
+          // Get saved state from Redux state, default to false if not found
+          // console.log(img)
+          const handlers = createPhotoCardHandlers({
+            navigate,
+            id: img.id,
+            onAction: handleAction,
+          });
+
+          return (
+            <PhotoCard
+              img={img}
+              likes={postLikes}
+              saved={postSaved}
+              comments={postComments}
+              onClick={handlers.handleCardClick}
+              onActionClick={handlers.handleActionClick}
+              onAddComment={handleComment}
+            />
+          );
+        }}
       />
 
       {isFetchingNextPage && (

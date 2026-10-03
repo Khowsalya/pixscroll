@@ -5,6 +5,8 @@ import App from './App.jsx'
 import { QueryClientProvider,QueryClient } from '@tanstack/react-query'
 import {BrowserRouter, Routes, Route } from 'react-router-dom'
 import { SearchProvider } from './context/SearchContext'
+import { Provider } from 'react-redux'
+import { store } from './redux/store.js'
 
 // React Query cache limits
 // staleTime: data stays fresh for 5 mins (no background refetch)
@@ -21,6 +23,7 @@ const queryClient = new QueryClient({defaultOptions: {
 });
 
 createRoot(document.getElementById('root')).render(
+    <Provider store={store}>
     <BrowserRouter>
     <QueryClientProvider client={queryClient}>
          {/* SearchProvider must be inside BrowserRouter so NavBar can use useNavigate */}
@@ -29,5 +32,6 @@ createRoot(document.getElementById('root')).render(
     </SearchProvider>
     </QueryClientProvider>
     </BrowserRouter>
+    </Provider>
   
 )

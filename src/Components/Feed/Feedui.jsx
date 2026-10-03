@@ -2,7 +2,8 @@
 // Presentational components for Feed.jsx only.
 // Pure props-in → JSX-out. No logic, no data fetching.
 
-import { FeedStyles } from "./FeedStyles";
+import { FeedStyles } from "./Feedstyles";
+import {useState} from 'react';
 
 // ── EmptySearchState ──────────────────────────────────────────
 /** Shown when a search returns zero results. */
@@ -28,7 +29,9 @@ export function SearchBanner({ searchQuery }) {
 
 // ── PhotoCard ─────────────────────────────────────────────────
 /** Single photo card rendered inside the Virtuoso list. */
-export function PhotoCard({ img, onClick }) {
+export function PhotoCard({ img,likes,saved,comments, onClick, onActionClick,onAddComment }) {
+  const [isCommentOpen, setIsCommentOpen] = useState(false);
+  const [commentText, setCommentText] = useState("");
   return (
     <div className={FeedStyles.cardOuter}>
       <div onClick={onClick} className={FeedStyles.card}>
@@ -40,12 +43,12 @@ export function PhotoCard({ img, onClick }) {
         />
         <div className={FeedStyles.cardBody}>
           <div className={FeedStyles.cardactionBar} >
-            <button className="btn btn-sm" onClick={(e) =>  e.stopPropagation()}>
+            <button className="btn btn-sm" onClick={(e) => onActionClick?.(e, "like")}>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="size-4"><path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" /></svg>
-                 Like
+                 {likes} Like
             </button>
 
-            <button className="btn btn-sm" onClick={(e) =>  e.stopPropagation()}>
+            <button className="btn btn-sm" onClick={(e) => onActionClick?.(e, "save")}>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
@@ -60,10 +63,13 @@ export function PhotoCard({ img, onClick }) {
                         d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z"
                       />
                     </svg>
-                    Save
+                    {saved ? "Unsave" : "Save"}
             </button>
 
-            <button className="btn btn-sm" onClick={(e) => e.stopPropagation()}>
+            <button className="btn btn-sm" onClick={(e) => {
+              e.stopPropagation();
+              setIsCommentOpen(!isCommentOpen);
+            }}>
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
@@ -81,6 +87,40 @@ export function PhotoCard({ img, onClick }) {
                       Comment
             </button>
           </div>
+          
+                {isCommentOpen && (
+          <div
+            className="mt-3"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <input
+              type="text"
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder="Write a comment..."
+              className="input input-bordered input-sm flex-1"
+            />
+
+            <button className="btn btn-sm"
+            onClick={() => {
+             if (!commentText.trim()) return; // Prevent empty comments
+             onAddComment?.({ id: img.id, comment: commentText });
+             setCommentText(""); // Clear input after posting
+            }}>
+              Post
+            </button>
+          {/* Display comments */}
+        <div className="flex flex-col gap-1">
+      {comments.map((comment, index) => (
+        <p key={index} className="text-sm">
+          {comment}
+        </p>
+      ))}
+    </div>
+          </div>
+
+
+        )}
           <p className={FeedStyles.cardTitle}>{img.alt_description}</p>
           <p className={FeedStyles.cardUsername}>{img.user.username}</p>
           <p className={FeedStyles.cardBio}>{img.user.bio}</p>
